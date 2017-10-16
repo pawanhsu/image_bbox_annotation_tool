@@ -13,7 +13,7 @@ templates/annotate.html for the annotation page and templates/index.html for ind
 ### Usage:
 1. Place the target images in ./static/data/<path_name>/
 2. Start the server
-```Shell
+```
 python ./server.py
 ```
 
@@ -35,5 +35,3 @@ python ./server.py
 - Delete bboxes
 - Edit a bbox label
 - Dragging on entire bbox
-
-

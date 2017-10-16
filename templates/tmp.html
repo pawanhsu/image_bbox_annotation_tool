@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multi-Attribute Annotation Tool</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="{{url_for('static',filename='css/custom.css')}}">
+    <link rel="stylesheet" href="{{url_for('static',filename='css/gridsystem.css')}}">
+    <link rel="stylesheet" href="{{url_for('static',filename='css/home.css')}}">
+</head>
+
+
+<body>
+  <nav class="navbar" id="nav">
+    <button  style="text-align:center;font-size: 25px" ><a href="#" >Multi-Attribute Annotation Tool</a></button>
+
+
+  </nav>
+
+
+
+  <div class="row" style="width:100%;margin-top:3%">
+    <div class="col-sm-offset-2 col-sm-2" style="text-align:center;margin-top:5.75%;">
+        <div class="panel panel-default" style="width:70%;margin-left:35%;background-color:#93a1a1">
+          <div class="panel-body">
+            <h4 data-toggle="modal" data-target="#new_res_tab" id="new_task"><sup>New Task&nbsp&nbsp</sup><img src="{{url_for('static',filename='img/new.png')}}" title="New Task" style="cursor:pointer" alt="Smiley face" height="30" width="30"></h4></a>
+            <h4 data-toggle="modal" data-target="#new_res_tab" id="delete_task"><sup>Delete Task&nbsp&nbsp</sup><img src="{{url_for('static',filename='img/delete.png')}}" title="New Task" style="cursor:pointer" alt="Smiley face" height="30" width="30"></h4>
+            <h4 data-toggle="modal" data-target="#new_res_tab" id="new_attr"><sup>New Attribute&nbsp&nbsp</sup><img src="{{url_for('static',filename='img/new.png')}}" title="New Task" style="cursor:pointer" alt="Smiley face" height="30" width="30"></h4>
+            <h4 data-toggle="modal" data-target="#new_res_tab" id="delete_task"><sup>Delete Attribute&nbsp&nbsp</sup><img src="{{url_for('static',filename='img/delete.png')}}" title="New Task" style="cursor:pointer" alt="Smiley face" height="30" width="30"></h4>
+          </div>
+        </div>
+    </div>
+    <div class=" col-sm-4" style="text-align:center" id="configuration">
+
+
+          <h2 class="header">Tasks</h2>
+              <hr style="  display:block;  width: 100%;  background-color:#999999;  height: 2px;margin-bottom:10px">
+
+            <div class = "row">
+              <div class="col-sm-offset-3 col-sm-6" style="text-align:center">
+                {% for task in taskList%}
+                  <a href="http://localhost:5001/main/{{task}}/0"><h3 style="text-align:center"> {{task}} </h3></a><br>
+                {% endfor %}
+              </div>
+            </div>
+
+            <hr style="  display:block;  width: 100%;  background-color:#999999;  height: 2px;margin-bottom:10px">
+
+
+          </div>
+
+
+    </div>
+  </div>
+  <!-- section one -->
+  <div class="container">
+    <!-- Trigger the modal with a button -->
+
+    <!-- Modal -->
+    <div class="modal fade" id="new_res_tab" role="dialog">
+      <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content" style="margin-left:30px;margin-top:230px;width:500px;height:310px;background-color:#073642">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h2 class="modal-title" style="font-size:30px;color">New Task</h2>
+          </div>
+          <form method="post" enctype="multipart/form-data">
+          <div class="modal-body" id="modal_body">
+
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-info" style="width: 65px;height:35px;" name="submit" value="Upload" >Create</button>
+            <button type="button" class="btn btn-info" style="width: 65px;height:35px;" data-dismiss="modal">Close</button>
+
+
+          </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+
+
+
+  </div>
+
+
+
+
+  <div class="section group">
+    <footer style="margin-top:20%;font-size:25px;padding:20px">
+      <font size=5 style="margin-top:100px;">Multi-Attribute Annotation Tool (iRONYUN INC.) © 2017.</font>
+    </footer>
+  </div>
+
+
+</body>
+
+
+</html>

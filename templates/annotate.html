@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      {%for bbox in bboxes%}
+       <meta class="bbox" label={{bbox['label']}} xmin="{{bbox['xmin']}}" ymin="{{bbox['ymin']}}" width="{{bbox['width']}}" height="{{bbox['height']}}">
+      {%endfor%}
+      <title>Image Bbox Annotator</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+       <script src="{{url_for('static', filename= 'js/d3.v4.min.js') }}"></script>
+      <link href="{{url_for('static', filename= 'img/annotation.png') }}" rel='icon' type='image/x-icon'/>
+
+      <style>
+
+         .flex-container {
+         display: -webkit-flex;
+         display: flex;
+         -webkit-flex-flow: row wrap;
+         flex-flow: row wrap;
+         text-align: center;
+         }
+         .flex-container > * {
+         padding: 15px;
+         -webkit-flex: 1 100%;
+         flex: 1 100%;
+         }
+         .article {
+         text-align: left;
+         }
+         header {background: black;color:white;}
+         footer {background: #aaa;color:white;}
+         .nav {background:#eee;}
+         .nav ul {
+         list-style-type: none;
+         padding: 0;
+         }
+         .nav ul a {
+         text-decoration: none;
+         }
+         @media all and (min-width: 768px) {
+         .nav {text-align:left;-webkit-flex: 1 auto;flex:1 auto;-webkit-order:1;order:1;}
+         .article {-webkit-flex:5 0px;flex:5 0px;-webkit-order:2;order:2;}
+         footer {-webkit-order:3;order:3;}
+         }
+         hr {
+         display: block;
+         height: 1px;
+         border: 0;
+         border-top: 1px solid #bbb;
+         margin: 1em 0;
+         padding: 0;
+         }
+         .form-group > label,button{
+         margin-top:5px
+         }
+         .annotation{
+         height:95%;
+         width:92%;
+         margin: auto 0;header
+          }
+         article a{
+           cursor:pointer;
+         }
+
+      </style>
+
+      {% if frame.submited == True %}
+      <script type="text/javascript">
+        $(document).ready(function(){
+            $('article').css("background-color", "#FF7F7F");
+          });
+      </script>
+      {% endif %}
+
+
+   </head>
+   <body style="width:100%;margin-top:5%;margin-left:20%">
+      <div class="flex-container">
+      <header>
+         <h1>Multi-Attribute Annotation Tool</h1>
+      </header>
+      <nav class="nav">
+         <ul>
+            <form action='/'>
+              <button type='submit' class="btn btn-default" type="submit">
+                <span class="glyphicon glyphicon-arrow-left"></span>
+                Return to index
+              </button>
+            </form>
+           
+            <form action="submit/" method='post'>
+                
+                <input class="attr" type="text" name="task_url" value= "annotate/{{task_name}}/{{taskid}}/{{frame_idx+1}}" hidden>
+                <input class="attr" type="text" name="frame_id" value= "{{frame.id}}" hidden>
+               
+                
+               <button class="btn btn-default" type="submit" class="attr_sub">
+                  <span class="glyphicon glyphicon-ok-circle"></span>
+                  Submit
+               </button>
+            </form>
+         </ul>
+      </nav>
+      <article class="article" style=" overflow-y: scroll;">
+         <a class="left" id="prev" href="{{frame_idx-1}}">
+           <span class="glyphicon glyphicon-chevron-left"></span>
+           <span class="sr-only">Previous</span>
+         </a>
+     
+         <th>
+
+
+          <svg id="img-layer" width={{img_size[0]}} height={{img_size[1]}}>
+            <image xlink:href="{{url_for('static', filename= 'data/' + task_path + '/' + frame.frame_name) }}" x="0" y="0" />
+
+          </svg> 
+           
+           
+          
+
+         </th>
+         <a class="right " id="next" href="{{frame_idx+1}}">
+          <span class="glyphicon glyphicon-chevron-right"></span>
+          <span class="sr-only">Next</span>
+        </a>
+      </article>
+      <footer>Copyright &copy; iRONYUN INC</footer>
+      </div>
+    
+    <script>
+
+   
+    function renderImage(){
+      var canvas = $('#img-layer').drawImage({
+        source: "{{url_for('static', filename= 'data/' + task_path + '/' + frame.frame_name) }}",
+        x: 0, 
+        y: 0,
+        width: {{img_size[0]}}, 
+        height:{{img_size[1]}},  
+        fromCenter: false
+        });
+      console.log("Render Image!");
+      //wait(1000);
+      //callback.call();
+    }
+
+
+
+  function loadBboxes(){
+    results = [];
+    bboxes = $('.bbox');
+   
+    for (i = 0; i<bboxes.length; i++){
+      bbox = bboxes[i]
+      xmin = parseInt(bbox.getAttribute('xmin'));
+      ymin = parseInt(bbox.getAttribute('ymin'));
+      width = parseInt(bbox.getAttribute('width'));
+      height = parseInt(bbox.getAttribute('height'));
+      label = bbox.getAttribute('label');
+      results.push({"x":xmin, "y":ymin, "width":width, "height":height, "label":label});      
+    } 
+    return results;
+  }
+
+
+
+    function renderBbox(svg, bbox){
+      xmin = parseInt(bbox.getAttribute('xmin'));
+      ymin = parseInt(bbox.getAttribute('ymin'));
+      width = parseInt(bbox.getAttribute('width'));
+      height = parseInt(bbox.getAttribute('height'));
+      label = bbox.getAttribute('label');
+      console.log(bbox);
+      boxGroup = svg.append("g").attr("class", "bbox");
+ 
+      boxGroup.append("rect")
+         .attr('x', xmin)
+         .attr('y', ymin)
+         .attr('height', height)
+         .attr('width', width)
+         .style("stroke-width", 4)
+         .style("stroke", "green")
+         .style("fill", "none");
+
+      boxGroup.append("rect")
+            .attr("x", xmin-2)
+            .attr("y", ymin - 23)
+            .attr("width", 17*(label).length + 0.5)
+            .attr("height", 21)
+            .attr("fill", "green")
+            .style("opacity", 0.6);
+
+      boxGroup.append("text")
+         .attr('x', xmin)
+         .attr('y', ymin-5)
+         .text(label)
+         .attr("font-size", "28px")
+         .attr("fill", "white");
+    
+
+    }
+
+
+  function renderBboxes(){
+    bboxes = loadBboxes();
+    svg = d3.select("svg");
+
+    var group = svg.selectAll('g')
+       .data(bboxes)
+       .enter()
+       .append("g")
+
+       group.append("rect")
+       .attr('x', function(d) { return d.x; })
+       .attr('y', function(d) { return d.y; })
+       .attr('height', function(d) { return d.height;})
+       .attr('width', function(d) { return d.width;})
+       .style("stroke-width", 4)
+       .style("stroke", "green")
+       .style("fill", "none");
+
+       group.append("rect")
+       .attr('x', function(d) { return d.x-2; })
+       .attr('y', function(d) { return d.y-23; })
+       .attr('height', function(d) { return 21;})
+       .attr('width', function(d) { return 17*(d.label).length + 0.5;})
+       .style("stroke-width", 4)
+       .style("stroke", "green")
+       .attr("fill", "green")
+       .style("opacity", 0.6);
+
+    
+   
+       group.append("text")
+       .attr("x", function(d) { return d.x; })
+       .attr("y", function(d) { return d.y-2; })
+       .text(function(d) { return d.label; })
+       .attr("font-size", "28px")
+       .attr("fill", "white");
+
+
+var drag_this = d3.drag().subject(this)
+    .on('start',function (d) {
+        if (d.x1){
+            d.x1 =  d3.event.x - d.xt;
+            d.y1 =  d3.event.y - d.yt;
+        }else{
+            d.x1 = d3.event.x;
+            d.y1 = d3.event.y;
+        }
+    })
+    .on('drag',function(d){
+        d3.select(this)
+        .attr("transform", "translate(" + (d3.event.x - d.x1)  + "," + (d3.event.y - d.y1) + ")");
+
+        d.xt = d3.event.x - d.x1;
+        d.yt = d3.event.y - d.y1;
+    });
+
+
+       
+      group.call(drag_this);
+;
+
+
+
+  }
+
+
+
+
+    /*
+
+    function renderBboxes(){
+      
+      var svg = d3.select("#img-layer");
+      var bboxes = $('.bbox');
+      
+      for (i = 0; i<bboxes.length; i++){
+        renderBbox(svg, bboxes[i]);      
+      }
+    }*/
+
+
+
+
+  function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+async function wait(minisec) {
+  console.log('Taking a break...');
+  await sleep(minisec);
+  renderBboxes();
+  console.log('Two second later');
+}
+
+   
+
+
+  renderBboxes();
+
+
+
+    </script>    
+
+
+
+   </body>
+</html>

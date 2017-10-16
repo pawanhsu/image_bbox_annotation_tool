@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<style>
+.panel {
+    cursor:pointer;
+    margin-bottom: 20px;
+    background-color: #fff;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.05);
+    box-shadow: 0 1px 1px rgba(0,0,0,.05);
+    font-size:18px;
+}
+.panel-default {
+    border-color: #ddd;
+}
+.panel-default>.panel-heading {
+    color: #333;
+    background-color: #f5f5f5;
+    border-color: #ddd;
+}
+.panel-heading {
+    padding: 10px 15px;
+    border-bottom: 1px solid transparent;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+}
+
+.panel-body {
+    padding: 15px;
+}
+
+.panel:hover{
+    background: #eeeeee
+}
+.panel-body > img:hover{
+    background: #bbbbbb
+}
+.flex-container {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-flow: row wrap;
+    flex-flow: row wrap;
+    text-align: center;
+}
+
+.flex-container > * {
+    padding: 15px;
+    -webkit-flex: 1 100%;
+    flex: 1 100%;
+}
+
+.article {
+    text-align: left;
+}
+
+header {background: black;color:white;}
+footer {background: #aaa;color:white;}
+.nav {background:#eee;}
+
+.nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+.nav ul a {
+    text-decoration: none;
+}
+
+@media all and (min-width: 768px) {
+    .nav {text-align:left;-webkit-flex: 1 auto;flex:1 auto;-webkit-order:1;order:1;}
+    .article {-webkit-flex:5 0px;flex:5 0px;-webkit-order:2;order:2;}
+    footer {-webkit-order:3;order:3;}
+}
+hr {
+    display: block;
+    height: 1px;
+    border: 0;
+    border-top: 1px solid #bbb;
+    margin: 1em 0;
+    padding: 0;
+}
+.form-group > label,button{
+  margin-top:5px
+}
+.start_annotate{
+  margin-top:-10px;
+  margin-bottom:10px
+}
+.delete_task{
+  cursor:pointer
+}
+.delete:hover{
+  background-color: #ccc
+}
+
+
+</style>
+<script>
+  $(document).ready(function(){
+      $("#show_tasklist").click(function(){
+          $("#task_list").show();
+          $("#attr_list").hide();
+          $(".new").hide();
+        });
+      $("#show_attrlist").click(function(){
+          $("#task_list").hide();
+          $("#attr_list").show();
+          $(".new").hide();
+        });
+      $("#new_task").click(function(){
+          $("#task_list").hide();
+          $("#attr_list").hide();
+          $("#new_task_form").show();
+          $("#new_attr_form").hide();
+        });
+      $("#new_attr").click(function(){
+          $("#task_list").hide();
+          $("#attr_list").hide();
+          $("#new_task_form").hide();
+          $("#new_attr_form").show();
+        });
+      $(".panel-body").click(function(){
+        //alert(1)
+      })
+      $(".panel-body > img").click(function(e){
+        e.stopPropagation();
+        //alert(2)
+      })
+      $(".panel-body > img").hover(function(){
+        $(this).parent().removeClass('hover')
+      })
+  });
+
+
+</script>
+</head>
+<body style="width:60%;margin-top:5%;margin-left:20%">
+
+<div class="flex-container">
+<header>
+  <h1>Image Bbox Annotation Tool</h1>
+</header>
+
+<nav class="nav">
+<ul>
+  <button type="button" class="btn btn-primary btn-block" id="show_tasklist">Task List</button>
+  
+  <button type="button" class="btn btn-primary btn-block" data-toggle="collapse" data-target="#new">
+  New&nbsp&nbsp<span class="glyphicon glyphicon-chevron-down"></span>
+  </button>
+  <hr>
+  <div class="collapse" id="new">
+    <button type="button" class="btn btn-default btn-block" id="new_task">Task</button>
+   
+  </div>
+</ul>
+</nav>
+
+<article class="article" style="height:500px;overflow-y: scroll;">
+  <div id="task_list">
+    <h1>Task List</h1>
+    <hr>
+    {% for task in tasks%}
+    <div class="panel panel-default" >
+      <div class="panel-body" data-toggle="collapse" data-target="#{{task.id}}">{{task.task_name}}
+        <span class="pull-right glyphicon glyphicon-chevron-down"></span>
+      </div>
+    </div>
+    <div class="collapse" id="{{task.id}}">
+      <a href='delete_task/{{task.id}}'><img src="{{url_for('static',filename='img/delete.png')}}" align="right" class="img-thumbnail delete delete_task" width="30" height="30">
+      <h4> Process: {{process_buf[loop.index-1].nFrames_submited}}/{{process_buf[loop.index-1].nFrames}}
+        <div class="progress progress-striped" style="width:70%">
+            <div class="progress-bar" role="progressbar" aria-valuenow="30" aria-valuemin="30" aria-valuemax="100" style="width:{{process_buf[loop.index-1].ratio}}%;">
+            </div>
+        </div>
+      </h4>
+      <a type="button" class="btn btn-default start_annotate" href="annotate/{{task.task_name}}/{{task.id}}/0">Start Annotation</a>
+      {% if process_buf[loop.index-1].ratio == 100.0 %}
+      <a type="button" class="btn btn-default start_annotate" href="">Dump Data</a>
+      {% else %}
+      <a type="button" class="btn btn-default start_annotate disabled" href="dump/{{task.task_name}}/">Dump Data</a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  
+
+  <div class="new" id="new_task_form" hidden>
+    <h2>New Task</h2>
+    <hr>
+    <form action="{{ url_for('create_task') }}" method='post'>
+      <div class="form-group">
+        <label for="Task">Task Name</label>
+        <input type="text" class="form-control" id="task_name" placeholder="Task name" name="task_name" required="required">
+      </div>
+      <div class="form-group">
+        <label for="Path">Path</label>
+        <input type="text" class="form-control" id="path" placeholder="Path" name="task_path" required="required">
+      </div>
+     
+    
+      <button type="submit" class="btn btn-default" >Create</button>
+    </form>
+  </div>
+  
+
+</article>
+
+<footer>Copyright &copy; iRONYUN INC</footer>
+</div>
+
+</body>
+
+</html>

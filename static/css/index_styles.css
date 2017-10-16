@@ -1,0 +1,47 @@
+.title{
+	text-align:center;
+	margin:auto;
+	font-family: "Arial", Arial, Sans-serif;
+}
+
+.uti-button{
+	display:block;
+	text-align:center;
+}
+
+.last_button{
+	position: absolute;
+	left:375px;
+	border: 3px;
+	background-color: white;
+}
+
+.index_button{
+	position: absolute;
+	right: 375px;
+	border: 3px;
+	background-color:white;
+}
+
+.last_button:hover{
+	background-color:gray;
+	color:white;
+}
+
+.index_button:hover{
+	background-color:gray;
+	color:white;
+}
+
+
+
+.main_img{
+	text-align:center;
+	width:480px;
+	height:360px;
+}
+
+.attribute{
+	text-align:right;
+}
+

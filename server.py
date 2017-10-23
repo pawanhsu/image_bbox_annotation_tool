@@ -76,7 +76,7 @@ def annotate(task_name, taskid, frame_idx):
     height, width, _ = img.shape
     bboxes = db.session.query(Bbox).filter_by(frame_id=frame.id)
     #return str(img.shape)
-   
+
     return render_template('annotate.html',\
             frame = frame,task_path = task.path, task_name = task.task_name, taskid = taskid, frame_idx = frame_idx\
             ,bboxes=bboxes, img_size = (width, height))
@@ -126,7 +126,7 @@ def create_task():
                 frame_buf.append(frame)
         db.session.add_all(frame_buf)
         db.session.commit()
-       
+
     else:
         print "[DEBUG MSG]: Path not exists"
     return redirect('/')
@@ -140,7 +140,7 @@ def load_detection():
     #task_path       = request.form["task_path"]
     dummy_path = "static/bboxes.json"
     input_path = dummy_path
-    dummy_task_name = "Fashion Handbag"
+    dummy_task_name = "task1"
     task_name = dummy_task_name
     task = db.session.query(Task).filter_by(task_name=dummy_task_name)[0]
     detections = json.load(open(dummy_path))
@@ -152,22 +152,24 @@ def load_detection():
 
         print(frame.__dict__.keys())
         for bbox in bboxes:
-            print(bbox.keys())
+            #print(bbox.keys())
             xmin = int(bbox['x'])
             ymin = int(bbox['y'])
             width = int(bbox['width'])
             height = int(bbox['height'])
             label = bbox['class']
-            print(height)
+            print(11111)
             new_bbox = Bbox(frame.id, xmin, ymin, width, height, label)
+
             db.session.add(new_bbox)
+
         db.session.commit()
             #print(new_bbox)
+    print bboxes
 
 
-  
-    return str(bboxes.label)
-   
+    return 2
+
 
 
 

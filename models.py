@@ -33,9 +33,20 @@ class Frame(db.Model):
 
     def __init__(self, frame_name, taskid):
         self.frame_name = frame_name
-        self.task_id     = taskid
+        self.task_id    = taskid
         self.submited   = False
 
+class Label(db.Model):
+    """Labels for each task"""
+    __tablename__ = 'labels'
+
+    id = Column(db.Integer, primary_key = True)
+    task_id = Column(ForeignKey(u'tasks.id'), nullable=False, index=True)
+    name = Column(String, nullable=False)
+
+    def __init__(self, task_id, name):
+        self.task_id = task_id
+        self.name    = name
 
 
 
@@ -43,7 +54,7 @@ class Bbox(db.Model):
     """Model for the Bounding Boxes"""
     __tablename__ = 'bboxes'
 
-    id = Column(db.Integer, primary_key = True)   
+    id = Column(db.Integer, primary_key = True)
     frame_id = Column(ForeignKey(u'frames.id'), nullable=False, index=True)
     xmin = Column(Integer, nullable=False)
     ymin = Column(Integer, nullable=False)
@@ -51,13 +62,13 @@ class Bbox(db.Model):
     height = Column(Integer, nullable=False)
     label = Column(String, nullable=False)
     frame = relationship(u'Frame')
+    label_id = Column(ForeignKey(u'labels.id'), nullable=False, index=True)
 
-    def __init__(self, frame_id, xmin, ymin, width, height, label):
-        self.frame_id = frame_id
-        self.xmin = xmin
-        self.ymin = ymin
-        self.width = width
-        self.height = height
-        self.label = label
-
-
+    def __init__(self, frame_id, xmin, ymin, width, height, label, label_id):
+        self.frame_id   = frame_id
+        self.xmin       = xmin
+        self.ymin       = ymin
+        self.width      = width
+        self.height     = height
+        self.label      = label
+        self.label_id   = label_id

@@ -1,0 +1,5 @@
+.DS_Store
+.pyc
+db.db
+/migrations
+__pycache__/

@@ -2,7 +2,7 @@
 <html>
    <head>
       {%for bbox in bboxes%}
-       <meta class="bbox" label={{bbox['label']}} xmin="{{bbox['xmin']}}" ymin="{{bbox['ymin']}}" width="{{bbox['width']}}" height="{{bbox['height']}}">
+       <meta class="bbox" id={{bbox['id']}} label={{bbox['label']}} xmin="{{bbox['xmin']}}" ymin="{{bbox['ymin']}}" width="{{bbox['width']}}" height="{{bbox['height']}}">
       {%endfor%}
       <title>Image Bbox Annotator</title>
       <meta charset="utf-8">
@@ -11,7 +11,7 @@
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-       <script src="http://d3js.org/d3.v3.min.js"></script>
+      <script src="http://d3js.org/d3.v3.min.js"></script>
       <link href="http://d3js.org/d3.v3.min.js" rel='icon' type='image/x-icon'/>
 
       <style>
@@ -81,7 +81,7 @@
    <body style="width:65%;margin-top:5%;margin-left:17.5%">
       <div class="flex-container">
       <header>
-         <h1>Multi-Attribute Annotation Tool</h1>
+         <h1>Image Bbox Annotation Tool</h1>
       </header>
       <nav class="nav">
          <ul>
@@ -91,19 +91,39 @@
                 Return to index
               </button>
             </form>
-            <button id='rectangle' class="btn btn-default">Rectangle</button>
+            <div class="panel-group" style="margin-top:10px">
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4 class="panel-title">
+                    <a data-toggle="collapse" href="#collapse1">New box</a>
+                  </h4>
+                </div>
+                <div id="collapse1" class="panel-collapse collapse">
+                  {% for label in labels%}
+                  <div id="{{label.id}}" class="panel-body newbox" style="cursor:pointer">{{label.name}}</div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
 
-            <form action="submit/" method='post'>
-
+            <form action="../../../submit/" method='post' style="margin-top:-10px" id="submitBox">
                 <input class="attr" type="text" name="task_url" value= "annotate/{{task_name}}/{{taskid}}/{{frame_idx+1}}" hidden>
+                <input class="attr" type="text" name="task_id" value= "{{taskid}}" hidden>
                 <input class="attr" type="text" name="frame_id" value= "{{frame.id}}" hidden>
-
-
-               <button class="btn btn-default" type="submit" class="attr_sub">
-                  <span class="glyphicon glyphicon-ok-circle"></span>
-                  Submit
-               </button>
+                <input class="attr" type="text" name="boxes_info" value = "" hidden id="boxes_info">
+                <input class="attr" type="text" name="deleted_box_id" value = "" hidden id="deleted_box_id">
+                <button class="btn btn-default" id="submit" class="attr_sub">
+                   <span class="glyphicon glyphicon-ok-circle"></span>
+                   Submit
+                </button>
             </form>
+
+            <script>
+
+            </script>
+
+
+
          </ul>
       </nav>
       <article class="article" style=" overflow-y: scroll;">
@@ -115,13 +135,10 @@
          <th>
 
 
-          <svg id="img-layer" width='720' height='480'>
-            <image xlink:href="{{url_for('static', filename= 'data/' + task_path + '/' + frame.frame_name) }}" x="0" y="0"/>
+          <svg id="img-layer" width='720' height='480' style="background-color">
+            <image id="gt_img" xlink:href="{{url_for('static', filename= 'data/' + task_path + '/' + frame.frame_name) }}" width="720" height="480"  x="0" y="0" preserveAspectRatio="none"/>
 
           </svg>
-
-
-
 
          </th>
          <a class="right " id="next" href="{{frame_idx+1}}">
@@ -150,190 +167,14 @@
     }
 
     </style>
-    <script>
+      <script>
+      gt_img_box = d3.select('#gt_img').node().getBBox();
+      var xAxis_scale = gt_img_box.width / {{img_size[0]}};
+      var yAxis_scale = gt_img_box.height/ {{img_size[1]}};
 
-    var svg_width = 720;
-    var svg_height = 480;
+      </script>
 
-    d3.select(svg).attr('width', svg_width)
-    d3.select(svg).attr('height',svg_height)
-
-
-    function renderImage(){
-
-      var canvas = $('#img-layer').drawImage({
-        source: "{{url_for('static', filename= 'data/' + task_path + '/' + frame.frame_name) }}",
-        x: 0,
-        y: 0,
-        width: 720,
-        height:480,
-        fromCenter: false
-        });
-      console.log("Render Image!");
-      //wait(1000);
-      //callback.call();
-    }
-
-    function renderBboxes(){
-
-
-      function loadBboxes(){
-        results = [];
-        bboxes = $('.bbox');
-
-        for (i = 0; i<bboxes.length; i++){
-          bbox = bboxes[i]
-          xmin = parseInt(bbox.getAttribute('xmin'));
-          ymin = parseInt(bbox.getAttribute('ymin'));
-          width = parseInt(bbox.getAttribute('width'));
-          height = parseInt(bbox.getAttribute('height'));
-          label = bbox.getAttribute('label');
-          results.push({"x":xmin, "y":ymin, "width":width, "height":height, "label":label});
-        }
-        return results;
-        }
-        boxes = loadBboxes();
-        for(i=0;i<boxes.length;i++){
-          new Rectangle(true,boxes[i])
-        }
-    }
-
-    d3.select('#rectangle').on('click', function(){ new Rectangle(); });
-
-    var w = 600, h = 500;
-    var svg = d3.select('svg')
-
-    function Rectangle(preloaded = false, box = []) {
-
-        var self = this, rect, rectData = [], isDown = false, m1, m2, isDrag = false;
-
-
-        var dragR = d3.behavior.drag().on('drag', dragRect);
-
-        function dragRect() {
-            var e = d3.event;
-            for(var i = 0; i < self.rectData.length; i++){
-                d3.select(self.rectangleElement[0][0])
-                    .attr('x', self.rectData[i].x += e.dx )
-                    .attr('y', self.rectData[i].y += e.dy );
-            }
-            rect.style('cursor', 'move');
-            updateRect();
-        }
-
-        var dragC1 = d3.behavior.drag().on('drag', dragPoint1);
-        var dragC2 = d3.behavior.drag().on('drag', dragPoint2);
-        var dragC3 = d3.behavior.drag().on('drag', dragPoint3);
-        var dragC4 = d3.behavior.drag().on('drag', dragPoint4);
-
-        function dragPoint1() {
-            var e = d3.event;
-            d3.select(self.pointElement1[0][0])
-                .attr('cx', function(d) { return d.x += e.dx })
-                .attr('cy', function(d) { return d.y += e.dy });
-            updateRect();
-        }
-
-        function dragPoint2() {
-            var e = d3.event;
-            d3.select(self.pointElement2[0][0])
-                .attr('cx', self.rectData[1].x += e.dx )
-                .attr('cy', self.rectData[1].y += e.dy );
-            updateRect();
-        }
-
-        function dragPoint3() {
-            var e = d3.event;
-            d3.select(self.pointElement3[0][0])
-                .attr('cx', self.rectData[1].x += e.dx )
-                .attr('cy', self.rectData[0].y += e.dy );
-            updateRect();
-        }
-
-        function dragPoint4() {
-            var e = d3.event;
-            d3.select(self.pointElement4[0][0])
-                .attr('cx', self.rectData[0].x += e.dx )
-                .attr('cy', self.rectData[1].y += e.dy );
-            updateRect();
-        }
-
-        if(!preloaded){
-          svg.on('mousedown', function() {
-              m1 = d3.mouse(this);
-              if (!isDown && !isDrag) {
-                  self.rectData = [ { x: m1[0], y: m1[1] }, { x: m1[0], y: m1[1] } ];
-                  self.rectangleElement = d3.select('svg').append('rect').attr('class', 'rectangle').call(dragR);
-                  self.pointElement1 = d3.select('svg').append('circle').attr('class', 'pointC').call(dragC1);
-                  self.pointElement2 = d3.select('svg').append('circle').attr('class', 'pointC').call(dragC2);
-                  self.pointElement3 = svg.append('circle').attr('class', 'pointC').call(dragC3);
-                  self.pointElement4 = svg.append('circle').attr('class', 'pointC').call(dragC4);
-                  self.label         = svg.append('rect').attr('class','rectangle')
-                  updateRect();
-                  isDrag = false;
-              } else {
-                  isDrag = true;
-              }
-              isDown = !isDown;
-          })
-
-          svg.on('mousemove', function() {
-              m2 = d3.mouse(this);
-              if(isDown && !isDrag) {
-                  self.rectData[1] = { x: m2[0], y: m2[1] };
-                  updateRect();
-              }
-          });
-      }
-      else{
-          m1 = [box.x * svg_width/{{img_size[0]}}, box.y * svg_height/{{img_size[1]}}], m2 = [box.x + box.width  * svg_width/{{img_size[0]}}, box.y + box.height * svg_height/{{img_size[1]}}];
-          self.rectData = [ { x: m1[0], y: m1[1] }, { x: m2[0], y: m2[1] } ];
-          self.rectangleElement = d3.select('svg').append('rect').attr('class', 'rectangle').call(dragR);
-          self.pointElement1 = d3.select('svg').append('circle').attr('class', 'pointC').call(dragC1);
-          self.pointElement2 = d3.select('svg').append('circle').attr('class', 'pointC').call(dragC2);
-          self.pointElement3 = svg.append('circle').attr('class', 'pointC').call(dragC3);
-          self.pointElement4 = svg.append('circle').attr('class', 'pointC').call(dragC4);
-          updateRect();
-      }
-
-      function updateRect() {
-          rect = d3.select(self.rectangleElement[0][0]);
-          rect.attr({
-              x: self.rectData[1].x - self.rectData[0].x > 0 ? self.rectData[0].x :  self.rectData[1].x,
-              y: self.rectData[1].y - self.rectData[0].y > 0 ? self.rectData[0].y :  self.rectData[1].y,
-              width: Math.abs(self.rectData[1].x - self.rectData[0].x),
-              height: Math.abs(self.rectData[1].y - self.rectData[0].y)
-          });
-
-          var point1 = d3.select(self.pointElement1[0][0]).data(self.rectData);
-          point1.attr('r', 3)
-                .attr('cx', self.rectData[0].x)
-                .attr('cy', self.rectData[0].y);
-          var point2 = d3.select(self.pointElement2[0][0]).data(self.rectData);
-          point2.attr('r', 3)
-                .attr('cx', self.rectData[1].x)
-                .attr('cy', self.rectData[1].y);
-          var point3 = d3.select(self.pointElement3[0][0]).data(self.rectData);
-          point3.attr('r', 3)
-                .attr('cx', self.rectData[1].x)
-                .attr('cy', self.rectData[0].y);
-          var point3 = d3.select(self.pointElement4[0][0]).data(self.rectData);
-          point3.attr('r', 3)
-                .attr('cx', self.rectData[0].x)
-                .attr('cy', self.rectData[1].y);
-      }
-
-
-
-    }//end Rectangle
-
-
-
-    renderBboxes()
-
-
-
-    </script>
+      <script src="{{url_for('static',filename='js/annotate.js')}}"></script>
 
 
 

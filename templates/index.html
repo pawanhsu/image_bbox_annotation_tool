@@ -150,14 +150,14 @@ hr {
 <nav class="nav">
 <ul>
   <button type="button" class="btn btn-primary btn-block" id="show_tasklist">Task List</button>
-  
+
   <button type="button" class="btn btn-primary btn-block" data-toggle="collapse" data-target="#new">
   New&nbsp&nbsp<span class="glyphicon glyphicon-chevron-down"></span>
   </button>
   <hr>
   <div class="collapse" id="new">
     <button type="button" class="btn btn-default btn-block" id="new_task">Task</button>
-   
+
   </div>
 </ul>
 </nav>
@@ -189,7 +189,7 @@ hr {
     </div>
     {% endfor %}
   </div>
-  
+
 
   <div class="new" id="new_task_form" hidden>
     <h2>New Task</h2>
@@ -203,12 +203,18 @@ hr {
         <label for="Path">Path</label>
         <input type="text" class="form-control" id="path" placeholder="Path" name="task_path" required="required">
       </div>
-     
-    
+      <div class="form-group">
+        <label for="Path">Labels</label>
+        <input type="text" class="form-control" id="labels" placeholder="Labels" name="task_labels" required="required">
+      </div>
+      <div class="form-group">
+        <label for="Path">Bbox Json</label>
+        <input type="text" class="form-control" id="bbox_json" placeholder="Bbox json file" name="task_bbox_json">
+      </div>
       <button type="submit" class="btn btn-default" >Create</button>
     </form>
   </div>
-  
+
 
 </article>
 

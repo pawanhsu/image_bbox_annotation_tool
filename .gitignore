@@ -1,5 +1,5 @@
 .DS_Store
-.pyc
-db.db
-/migrations
 __pycache__/
+*.pyc
+migrations/
+db.db
